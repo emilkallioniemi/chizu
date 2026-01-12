@@ -7,7 +7,7 @@ export default function Home() {
           <div className="max-w-6xl mx-auto flex items-center justify-between">
             <div className="text-xl font-medium text-[#1a1a1a]">地図</div>
             <a
-              href="#get-started"
+              href="/app"
               className="text-sm text-[#4a4a4a] hover:text-[#1a1a1a] transition-colors"
             >
               Get Started
@@ -30,7 +30,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a
-                href="#get-started"
+                href="/app"
                 className="px-8 py-3 gradient-button text-sm font-medium text-center"
               >
                 Start Mapping
@@ -173,7 +173,7 @@ export default function Home() {
               current.
             </p>
             <a
-              href="#get-started"
+              href="/app"
               className="inline-block px-10 py-4 gradient-button text-base font-medium"
             >
               Get Started Free
