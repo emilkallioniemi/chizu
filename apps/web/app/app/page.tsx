@@ -2,18 +2,14 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
-}
+import { useChat } from "@ai-sdk/react";
 
 export default function AppPage() {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { messages, sendMessage, isLoading } = useChat({
+    api: "/api/chat",
+  });
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -31,50 +27,15 @@ export default function AppPage() {
       textarea.style.height = "auto";
       textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
     }
-  }, [input]);
+  }, [input || ""]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: input,
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
+    sendMessage({ text: input });
     setInput("");
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-    }
-    setIsLoading(true);
-
-    try {
-      // TODO: Replace with actual LLM API call
-      // For now, simulating a response
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: `I received your message: "${userMessage.content}". This is a placeholder response. To enable real LLM functionality, you'll need to integrate with an LLM API (e.g., OpenAI, Anthropic, or a local model).`,
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error("Error sending message:", error);
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "Sorry, I encountered an error. Please try again.",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -120,9 +81,15 @@ export default function AppPage() {
                   <p className="text-xs text-[#4a4a4a] mb-1">
                     {message.role === "user" ? "You" : "Chizu"}
                   </p>
-                  <p className="text-[#1a1a1a] leading-relaxed whitespace-pre-wrap">
-                    {message.content}
-                  </p>
+                  <div className="text-[#1a1a1a] leading-relaxed whitespace-pre-wrap">
+                    {message.parts && message.parts.length > 0
+                      ? message.parts
+                          .filter((part) => part.type === "text")
+                          .map((part, index) => (
+                            <span key={index}>{part.text}</span>
+                          ))
+                      : message.content || ""}
+                  </div>
                 </div>
               </div>
             ))
@@ -147,17 +114,17 @@ export default function AppPage() {
 
         {/* Input Area */}
         <form
-          onSubmit={handleSubmit}
+          onSubmit={onSubmit}
           className="flex gap-3 border-t border-[#1a1a1a]/5 pt-6 shrink-0 items-end"
         >
           <textarea
             ref={textareaRef}
-            value={input}
+            value={input || ""}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                handleSubmit(e);
+                onSubmit(e as any);
               }
             }}
             placeholder="Type your message..."
@@ -168,7 +135,7 @@ export default function AppPage() {
           />
           <button
             type="submit"
-            disabled={!input.trim() || isLoading}
+            disabled={!input?.trim() || isLoading}
             className="px-6 py-2 text-sm font-medium text-[#1a1a1a] hover:text-[#4a4a4a] disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
           >
             Send
