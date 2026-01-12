@@ -14,7 +14,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Chizu - Map Your Thinking",
-  description: "A personal knowledge management system that extracts and maintains your beliefs, decisions, and conclusions from AI conversations.",
+  description:
+    "A personal knowledge management system that extracts and maintains your beliefs, decisions, and conclusions from AI conversations.",
 };
 
 export default function RootLayout({

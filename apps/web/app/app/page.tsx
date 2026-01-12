@@ -3,12 +3,15 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 
 export default function AppPage() {
   const [input, setInput] = useState("");
-  const { messages, sendMessage, isLoading } = useChat({
-    api: "/api/chat",
+  const { messages, sendMessage, status } = useChat({
+    transport: new DefaultChatTransport({ api: "/api/chat" }),
   });
+
+  const isLoading = status === "streaming" || status === "submitted";
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -27,16 +30,20 @@ export default function AppPage() {
       textarea.style.height = "auto";
       textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
     }
-  }, [input || ""]);
+  }, [input]);
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     if (!input.trim() || isLoading) return;
     sendMessage({ text: input });
     setInput("");
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
+  };
+
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleSubmit();
   };
 
   return (
@@ -82,13 +89,11 @@ export default function AppPage() {
                     {message.role === "user" ? "You" : "Chizu"}
                   </p>
                   <div className="text-[#1a1a1a] leading-relaxed whitespace-pre-wrap">
-                    {message.parts && message.parts.length > 0
-                      ? message.parts
-                          .filter((part) => part.type === "text")
-                          .map((part, index) => (
-                            <span key={index}>{part.text}</span>
-                          ))
-                      : message.content || ""}
+                    {message.parts
+                      .filter((part) => part.type === "text")
+                      .map((part, index) => (
+                        <span key={index}>{part.text}</span>
+                      ))}
                   </div>
                 </div>
               </div>
@@ -124,7 +129,7 @@ export default function AppPage() {
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                onSubmit(e as any);
+                handleSubmit();
               }
             }}
             placeholder="Type your message..."
