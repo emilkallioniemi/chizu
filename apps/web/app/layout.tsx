@@ -13,9 +13,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+  ),
   title: "Chizu - Map Your Thinking",
   description:
     "A personal knowledge management system that extracts and maintains your beliefs, decisions, and conclusions from AI conversations.",
+  openGraph: {
+    title: "Chizu - Map Your Thinking",
+    description:
+      "A personal knowledge management system that extracts and maintains your beliefs, decisions, and conclusions from AI conversations.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Chizu - Map Your Thinking",
+    description:
+      "A personal knowledge management system that extracts and maintains your beliefs, decisions, and conclusions from AI conversations.",
+  },
 };
 
 export default function RootLayout({
